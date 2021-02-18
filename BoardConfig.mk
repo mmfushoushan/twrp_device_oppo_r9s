@@ -1,11 +1,13 @@
 #
-# Copyright (C) 2017 The Android Open Source Project
+# Copyright (C) 2020 The Android Open Source Project
+# Copyright (C) 2020 The TWRP Open Source Project
+# Copyright (C) 2020 SebaUbuntu's TWRP device tree generator
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +16,10 @@
 # limitations under the License.
 #
 
-LOCAL_PATH := device/oppo/r9s
+DEVICE_PATH := device/oppo/R9s
+
+# For building with minimal manifest
+ALLOW_MISSING_DEPENDENCIES := true
 
 # Architecture
 TARGET_ARCH := arm64
@@ -24,126 +29,53 @@ TARGET_CPU_ABI2 :=
 TARGET_CPU_VARIANT := generic
 
 TARGET_2ND_ARCH := arm
-TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_ARCH_VARIANT := armv7-a-neon
 TARGET_2ND_CPU_ABI := armeabi-v7a
 TARGET_2ND_CPU_ABI2 := armeabi
-TARGET_2ND_CPU_VARIANT := cortex-a53
-
-TARGET_BOARD_PLATFORM := msm8953
-TARGET_BOARD_PLATFORM_GPU := qcom-adreno506
+TARGET_2ND_CPU_VARIANT := generic
 TARGET_BOARD_SUFFIX := _64
+TARGET_USES_64_BIT_BINDER := true
 
-# Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := MSM8953
-TARGET_NO_BOOTLOADER := true
-TARGET_PROVIDES_KEYMASTER := true
+# Assert
+TARGET_OTA_ASSERT_DEVICE := R9s
 
-# Crypto
-TARGET_HW_DISK_ENCRYPTION := true
-TARGET_KEYMASTER_WAIT_FOR_QSEE := true
-TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_FBE := true
-TW_INCLUDE_CRYPTO_FBE := true
-TARGET_CRYPTFS_HW_PATH := vendor/qcom/opensource/commonsys/cryptfs_hw
-TW_CRYPTO_SYSTEM_VOLD_MOUNT := system vendor cust
-
-
-# Kernel
-BOARD_KERNEL_BASE := 0x80000000
-BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlycon=msm_hsl_uart,0x78af000 androidboot.selinux=permissive
-BOARD_KERNEL_PAGESIZE := 4096
-BOARD_KERNEL_TAGS_OFFSET := 0x00000100
-BOARD_RAMDISK_OFFSET := 0x01000000
-TARGET_PREBUILT_KERNEL := $(LOCAL_PATH)/Image.gz-dtb
-
-# Partitions
-BOARD_BOOTIMAGE_PARTITION_SIZE := 0x04000000
-BOARD_RECOVERYIMAGE_PARTITION_SIZE := 0x04000000
-BOARD_SYSTEMIMAGE_PARTITION_SIZE := 3221225472
-BOARD_USERDATAIMAGE_PARTITION_SIZE := 58846064640 # (58846081024-16384)
-BOARD_VENDORIMAGE_PARTITION_SIZE := 872415232
-BOARD_CACHEIMAGE_PARTITION_SIZE := 402653184
-BOARD_PERSISTIMAGE_PARTITION_SIZE := 33554432
-BOARD_FLASH_BLOCK_SIZE := 262144 # (BOARD_KERNEL_PAGESIZE * 64)
-
-# Recovery
-BOARD_NEEDS_VENDORIMAGE_SYMLINK := false
+# File systems
+BOARD_HAS_LARGE_FILESYSTEM := true
+#BOARD_RECOVERYIMAGE_PARTITION_SIZE := 19078400 # This is the maximum known partition size, but it can be higher, so we just omit it
+BOARD_SYSTEMIMAGE_PARTITION_TYPE := ext4
+BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := ext4
+BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
-BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 TARGET_COPY_OUT_VENDOR := vendor
-BOARD_HAS_LARGE_FILESYSTEM := true
 
-# System-as-root
-BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
-BOARD_ROOT_EXTRA_FOLDERS := bluetooth dsp firmware persist
-BOARD_SUPPRESS_SECURE_ERASE := true
+# Kernel
+BOARD_KERNEL_CMDLINE := console=ttyHSL0,115200,n8 androidboot.console=ttyHSL0 androidboot.hardware=qcom msm_rtb.filter=0x237 ehci-hcd.park=3 lpm_levels.sleep_disabled=1 androidboot.bootdevice=7824900.sdhci earlyprintk androidboot.selinux=permissive ramoops.mem_address=0x8ff00000 ramoops.mem_size=0x100000 ramoops.record_size=0x20000 ramoops.console_size=0x20000 ramoops.dump_oops=0 buildvariant=eng
+TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/Image.gz-dtb
+BOARD_KERNEL_BASE := 0x80000000
+BOARD_KERNEL_PAGESIZE := 2048
+BOARD_RAMDISK_OFFSET := 0x01000000
+BOARD_KERNEL_TAGS_OFFSET := 0x00000100
+BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
+BOARD_MKBOOTIMG_ARGS += --ramdisk_offset $(BOARD_RAMDISK_OFFSET)
+BOARD_MKBOOTIMG_ARGS += --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
+BOARD_KERNEL_IMAGE_NAME := Image.gz-dtb
+TARGET_KERNEL_ARCH := arm64
+TARGET_KERNEL_HEADER_ARCH := arm64
+TARGET_KERNEL_SOURCE := kernel/oppo/R9s
+TARGET_KERNEL_CONFIG := R9s_defconfig
 
+# Platform
+TARGET_BOARD_PLATFORM := msm8953
+
+# Hack: prevent anti rollback
+PLATFORM_SECURITY_PATCH := 2099-12-31
+VENDOR_SECURITY_PATCH := 2099-12-31
+PLATFORM_VERSION := 16.1.0
 
 # TWRP Configuration
 TW_THEME := portrait_hdpi
-TW_INCLUDE_CRYPTO := true
-TW_MAX_BRIGHTNESS := 255
-TW_DEFAULT_BRIGHTNESS := 155
-TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
-TW_EXCLUDE_SUPERSU := true
-TW_SCREEN_BLANK_ON_BOOT := true
-TARGET_RECOVERY_QCOM_RTC_FIX := true
-TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
-TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/twrp.fstab
-BOARD_SUPPRESS_SECURE_ERASE := true
-TW_IGNORE_MISC_WIPE_DATA := true
-TW_INPUT_BLACKLIST := "hbtp_vm"
-TWRP_INCLUDE_LOGCAT := true
-TARGET_USES_LOGD := true
-TW_HAS_EDL_MODE := false
 TW_EXTRA_LANGUAGES := true
-ALLOW_MISSING_DEPENDENCIES := true
-TW_CRYPTO_SYSTEM_VOLD_MOUNT := system vendor cust
-AB_OTA_UPDATER := false
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_USE_TOOLBOX := true
-
-# exFAT FS Support
-TW_INCLUDE_FUSE_EXFAT := true
-
-# NTFS Support
-TW_INCLUDE_FUSE_NTFS := true
-TW_INCLUDE_NTFS_3G := true
-
-# OTA
-TARGET_OTA_ASSERT_DEVICE := R9s
-#SHRP
-# NOTE - Dont use '-' or blank spaces in flag values , otherwise it will create build errors or other bugs in recovery (Excluding SHRP_PATH,SHRP_REC). 
-# Path of your SHRP Tree
-SHRP_PATH := device/brand/codename
-# Maintainer name
-SHRP_MAINTAINER := QualityTeam
-# Device codename
-SHRP_DEVICE_CODE := c103
-# put this 0 if device has no EDL mode
-SHRP_EDL_MODE := 0
-SHRP_EXTERNAL := /external_sd
-SHRP_INTERNAL := /sdcard
-SHRP_OTG := /usb_otg
-# Put 0 to disable flashlight
-SHRP_FLASH := 1
-# These are led paths, find yours then put here (Optional)
-SHRP_CUSTOM_FLASHLIGHT := true
-SHRP_FONP_1 := /sys/class/leds/led:torch_0/brightness
-SHRP_FONP_2 := /sys/class/leds/led:torch_1/brightness
-SHRP_FONP_3 := /sys/class/leds/led:switch/brightness
-# Max Brightness of LED (Optional)
-SHRP_FLASH_MAX_BRIGHTNESS := 255
-# Check your device's recovery path, dont use blindly
-SHRP_REC := /dev/block/bootdevice/by-name/recovery
-# Use this flag only if your device is A/B
-SHRP_AB := false
-# Recovery Type (It can be treble,normal,SAR) [Only for About Section]
-SHRP_REC_TYPE := Normal
-# Recovery Type (It can be A/B or A_only) [Only for About Section]
-SHRP_DEVICE_TYPE := A_Only
-# SHRP Padding Flag (Only for rounded corner devices.)
-SHRP_STATUSBAR_RIGHT_PADDING := 40
-SHRP_STATUSBAR_LEFT_PADDING := 40
-# SHRP Express, enables on-the-fly theme patching (also persistent) + persistent lock
-SHRP_EXPRESS := true
